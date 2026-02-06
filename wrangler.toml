@@ -1,0 +1,13 @@
+name = "cbeta-mcp-workers"
+main = "src/index.ts"
+compatibility_date = "2024-02-06"
+
+[vars]
+APP_NAME = "CbetaMCP"
+APP_VERSION = "1.0.0"
+
+[env.development]
+vars = { APP_ENV = "development" }
+
+[env.production]
+vars = { APP_ENV = "production" }

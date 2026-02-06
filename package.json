@@ -1,0 +1,20 @@
+{
+  "name": "cbeta-mcp-workers",
+  "version": "1.0.0",
+  "description": "Cbeta MCP Server on Cloudflare Workers",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240206.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.28.0"
+  },
+  "license": "MIT"
+}
