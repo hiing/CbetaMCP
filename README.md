@@ -115,6 +115,32 @@ npm run deploy
 
 在 Windsurf 的 MCP 配置面板中添加上述相同的 JSON 配置。
 
+### 部署后配置（OpenCode）
+
+在 OpenCode 的 MCP Servers 配置中，添加以下内容：
+
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "env": {
+        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
+
+配置方法：
+1. 打开 OpenCode 设置
+2. 找到 MCP Servers 或 Tools 配置选项
+3. 点击添加新的 MCP Server
+4. 输入名称（如 `cbeta`）
+5. 粘贴上述 JSON 配置
+6. 保存并刷新配置
+
 ### 调用示例
 
 配置完成后，你可以在对话中直接调用 CBETA 工具，例如：
