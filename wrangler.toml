@@ -1,4 +1,4 @@
-name = "cbeta-mcp-workers"
+name = "cbetamcp"
 main = "src/index.ts"
 compatibility_date = "2024-02-06"
 
