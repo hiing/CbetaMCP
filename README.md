@@ -85,6 +85,66 @@ npm run deploy
 
 部署完成后，你需要在 MCP 客户端中配置该 MCP 服务器。
 
+### 📋 MCP 桥接脚本使用指南
+
+由于 Cloudflare Workers 只支持 HTTP 传输，而 MCP 客户端通常使用 stdio，所以需要 `mcp-bridge.js` 作为中间桥梁。
+
+#### 准备桥接脚本
+
+将项目中的 `mcp-bridge.js` 文件复制到你的工作目录，或记住它的存放位置：
+
+```bash
+# 方式1：复制到项目目录
+cp mcp-bridge.js ~/my-project/
+
+# 方式2：复制到全局位置
+cp mcp-bridge.js ~/.local/bin/
+
+# 方式3：保持原位置，使用绝对路径
+```
+
+#### 路径配置方式
+
+支持以下路径写法（在 MCP 客户端配置中使用）：
+
+| 方式 | 示例 | 适用场景 |
+|------|------|----------|
+| **相对路径** | `"./mcp-bridge.js"` | 脚本与配置文件同目录 |
+| **绝对路径(Linux/Mac)** | `"/home/user/project/mcp-bridge.js"` | Linux/Mac 系统 |
+| **绝对路径(Windows)** | `"C:/Users/name/project/mcp-bridge.js"` | Windows 系统（注意使用正斜杠） |
+| **用户目录** | `"~/mcp-bridge.js"` | 存放在用户主目录 |
+
+#### 环境变量配置
+
+你可以通过环境变量灵活配置：
+
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["${MCP_BRIDGE_PATH}"],
+      "env": {
+        "SERVER_URL": "https://your-worker.your-subdomain.workers.dev/mcp",
+        "MCP_BRIDGE_PATH": "./mcp-bridge.js"
+      }
+    }
+  }
+}
+```
+
+或者设置系统环境变量：
+
+```bash
+# Linux/Mac
+export MCP_BRIDGE_PATH="/path/to/mcp-bridge.js"
+export CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
+
+# Windows (PowerShell)
+$env:MCP_BRIDGE_PATH="C:/path/to/mcp-bridge.js"
+$env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
+```
+
 ### 本地开发环境配置
 
 在本地开发时，可以使用以下配置：
@@ -93,8 +153,8 @@ npm run deploy
 {
   "mcpServers": {
     "cbeta": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "command": "node",
+      "args": ["/path/to/mcp-bridge.js"],
       "env": {
         "SERVER_URL": "http://localhost:8787/mcp"
       }
@@ -111,8 +171,8 @@ npm run deploy
 {
   "mcpServers": {
     "cbeta": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "command": "node",
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }
@@ -120,6 +180,10 @@ npm run deploy
   }
 }
 ```
+
+**路径说明**：
+- `./mcp-bridge.js` 表示脚本与配置文件在同一目录
+- 也可以使用绝对路径，如 `"/Users/name/mcp/cbeta-mcp-bridge.js"`（Mac）或 `"C:/Users/name/mcp/mcp-bridge.js"`（Windows）
 
 配置文件位置：
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -133,8 +197,8 @@ npm run deploy
 {
   "mcpServers": {
     "cbeta": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "command": "node",
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }
@@ -142,6 +206,10 @@ npm run deploy
   }
 }
 ```
+
+**路径说明**：
+- 如果使用相对路径 `./mcp-bridge.js`，确保 mcp-bridge.js 文件在项目根目录
+- 或者使用绝对路径指向 mcp-bridge.js 的实际位置
 
 ### 部署后配置（Cline）
 
@@ -151,8 +219,8 @@ npm run deploy
 {
   "mcpServers": {
     "cbeta": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "command": "node",
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }
@@ -161,9 +229,25 @@ npm run deploy
 }
 ```
 
+**提示**：Cline 支持使用环境变量 `${env:VAR_NAME}` 来引用系统环境变量
+
 ### 部署后配置（Windsurf）
 
-在 Windsurf 的 MCP 配置面板中添加上述相同的 JSON 配置。
+在 Windsurf 的 MCP 配置面板中添加：
+
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["/path/to/mcp-bridge.js"],
+      "env": {
+        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
 
 ### 部署后配置（OpenCode）
 
@@ -173,8 +257,8 @@ npm run deploy
 {
   "mcpServers": {
     "cbeta": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/mcp-proxy"],
+      "command": "node",
+      "args": ["/path/to/mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }

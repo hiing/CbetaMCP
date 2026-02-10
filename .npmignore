@@ -1,0 +1,50 @@
+# 只发布桥接脚本和文档
+# 不发布 Workers 相关代码
+
+src/
+wrangler.toml
+tsconfig.json
+.dev.vars
+.dev.vars.local
+.wrangler/
+
+# 依赖和构建
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+dist/
+build/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 测试
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Git
+.git/
+.gitignore
+.github/
+
+# 其他
+*.md
+!README.md
