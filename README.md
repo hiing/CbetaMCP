@@ -40,16 +40,57 @@ https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
 
 ### 3. 配置 MCP 客户端
 
-在 MCP 客户端配置中，将 `SERVER_URL` 设置为你的地址：
+本项目包含 `mcp-bridge.js` 文件，它作为 MCP 客户端与 Cloudflare Workers 之间的桥梁。你需要配置两个环境变量：
+
+#### 环境变量说明
+
+| 环境变量 | 说明 | 示例 |
+|---------|------|------|
+| `SERVER_URL` | **必需** - 你的 Cloudflare Workers 地址 | `https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp` |
+| `MCP_BRIDGE_PATH` | **可选** - mcp-bridge.js 的路径，默认为 `./mcp-bridge.js` | `/absolute/path/to/mcp-bridge.js` |
+
+#### 配置示例
+
+**方式一：使用默认相对路径（推荐）**
+
+确保 `mcp-bridge.js` 与 MCP 配置文件在同一目录：
 
 ```json
 {
   "mcpServers": {
     "cbeta": {
       "command": "node",
-      "args": ["/path/to/mcp-bridge.js"],
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
+
+**方式二：使用环境变量指定路径**
+
+先设置环境变量：
+```bash
+# Linux/Mac
+export MCP_BRIDGE_PATH="/path/to/cbeta-mcp/mcp-bridge.js"
+export SERVER_URL="https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+
+# Windows PowerShell
+$env:MCP_BRIDGE_PATH="C:/path/to/cbeta-mcp/mcp-bridge.js"
+$env:SERVER_URL="https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+```
+
+然后配置 MCP 客户端：
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["${MCP_BRIDGE_PATH}"],
+      "env": {
+        "SERVER_URL": "${SERVER_URL}"
       }
     }
   }
@@ -89,72 +130,66 @@ npm run deploy
 
 由于 Cloudflare Workers 只支持 HTTP 传输，而 MCP 客户端通常使用 stdio，所以需要 `mcp-bridge.js` 作为中间桥梁。
 
-#### 准备桥接脚本
+#### 项目文件结构
 
-将项目中的 `mcp-bridge.js` 文件复制到你的工作目录，或记住它的存放位置：
+下载/克隆项目后，你会得到以下文件：
 
-```bash
-# 方式1：复制到项目目录
-cp mcp-bridge.js ~/my-project/
-
-# 方式2：复制到全局位置
-cp mcp-bridge.js ~/.local/bin/
-
-# 方式3：保持原位置，使用绝对路径
 ```
+CbetaMCP/
+├── mcp-bridge.js          # ⭐ 桥接脚本（使用此文件）
+├── src/                   # 源代码（无需修改）
+├── package.json           # 项目配置
+├── wrangler.toml          # Workers 配置
+└── README.md              # 本文档
+```
+
+你只需要关注 `mcp-bridge.js` 文件，其他是部署到 Cloudflare 所需的代码。
 
 #### 路径配置方式
 
-支持以下路径写法（在 MCP 客户端配置中使用）：
+`mcp-bridge.js` 支持多种路径写法：
 
 | 方式 | 示例 | 适用场景 |
 |------|------|----------|
-| **相对路径** | `"./mcp-bridge.js"` | 脚本与配置文件同目录 |
-| **绝对路径(Linux/Mac)** | `"/home/user/project/mcp-bridge.js"` | Linux/Mac 系统 |
-| **绝对路径(Windows)** | `"C:/Users/name/project/mcp-bridge.js"` | Windows 系统（注意使用正斜杠） |
-| **用户目录** | `"~/mcp-bridge.js"` | 存放在用户主目录 |
+| **相对路径（推荐）** | `"./mcp-bridge.js"` | 脚本与 MCP 配置文件同目录 |
+| **绝对路径(Linux/Mac)** | `"/home/user/CbetaMCP/mcp-bridge.js"` | 指定完整路径 |
+| **绝对路径(Windows)** | `"C:/Users/name/CbetaMCP/mcp-bridge.js"` | Windows 系统（使用正斜杠） |
+| **用户目录** | `"~/CbetaMCP/mcp-bridge.js"` | 存放在用户主目录下 |
 
-#### 环境变量配置
+### 🛠️ 各客户端配置示例
 
-你可以通过环境变量灵活配置：
+以下配置适用于所有 MCP 客户端。只需将 `SERVER_URL` 替换为你自己的 Workers 地址，并根据实际情况调整 `mcp-bridge.js` 的路径。
+
+#### 配置模板
 
 ```json
 {
   "mcpServers": {
     "cbeta": {
       "command": "node",
-      "args": ["${MCP_BRIDGE_PATH}"],
+      "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker.your-subdomain.workers.dev/mcp",
-        "MCP_BRIDGE_PATH": "./mcp-bridge.js"
+        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }
     }
   }
 }
 ```
 
-或者设置系统环境变量：
+**配置说明**：
+- `args`: mcp-bridge.js 的路径（相对或绝对路径）
+- `SERVER_URL`: 你的 Cloudflare Workers 地址
 
-```bash
-# Linux/Mac
-export MCP_BRIDGE_PATH="/path/to/mcp-bridge.js"
-export CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
+---
 
-# Windows (PowerShell)
-$env:MCP_BRIDGE_PATH="C:/path/to/mcp-bridge.js"
-$env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
-```
-
-### 本地开发环境配置
-
-在本地开发时，可以使用以下配置：
+#### 本地开发配置
 
 ```json
 {
   "mcpServers": {
     "cbeta": {
       "command": "node",
-      "args": ["/path/to/mcp-bridge.js"],
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "http://localhost:8787/mcp"
       }
@@ -163,35 +198,33 @@ $env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
 }
 ```
 
-### 部署后配置（Claude Desktop）
+---
 
-在 Claude Desktop 的配置文件 `claude_desktop_config.json` 中添加：
-
-```json
-{
-  "mcpServers": {
-    "cbeta": {
-      "command": "node",
-      "args": ["./mcp-bridge.js"],
-      "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
-      }
-    }
-  }
-}
-```
-
-**路径说明**：
-- `./mcp-bridge.js` 表示脚本与配置文件在同一目录
-- 也可以使用绝对路径，如 `"/Users/name/mcp/cbeta-mcp-bridge.js"`（Mac）或 `"C:/Users/name/mcp/mcp-bridge.js"`（Windows）
+#### Claude Desktop
 
 配置文件位置：
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
-### 部署后配置（Cursor）
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["./mcp-bridge.js"],
+      "env": {
+        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
 
-在 Cursor 的 Settings > Features > MCP Servers 中添加：
+---
+
+#### Cursor
+
+Settings > Features > MCP Servers：
 
 ```json
 {
@@ -207,13 +240,11 @@ $env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
 }
 ```
 
-**路径说明**：
-- 如果使用相对路径 `./mcp-bridge.js`，确保 mcp-bridge.js 文件在项目根目录
-- 或者使用绝对路径指向 mcp-bridge.js 的实际位置
+---
 
-### 部署后配置（Cline）
+#### Cline
 
-在 Cline 的 MCP Server 配置中添加：
+MCP Server 配置：
 
 ```json
 {
@@ -229,18 +260,20 @@ $env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
 }
 ```
 
-**提示**：Cline 支持使用环境变量 `${env:VAR_NAME}` 来引用系统环境变量
+**提示**：Cline 支持使用环境变量 `${env:VAR_NAME}`
 
-### 部署后配置（Windsurf）
+---
 
-在 Windsurf 的 MCP 配置面板中添加：
+#### Windsurf
+
+MCP 配置面板：
 
 ```json
 {
   "mcpServers": {
     "cbeta": {
       "command": "node",
-      "args": ["/path/to/mcp-bridge.js"],
+      "args": ["./mcp-bridge.js"],
       "env": {
         "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
       }
@@ -249,31 +282,29 @@ $env:CBETA_MCP_URL="https://your-worker.your-subdomain.workers.dev/mcp"
 }
 ```
 
-### 部署后配置（OpenCode）
+---
 
-在 OpenCode 的 MCP Servers 配置中，添加以下内容：
-
-```json
-{
-  "mcpServers": {
-    "cbeta": {
-      "command": "node",
-      "args": ["/path/to/mcp-bridge.js"],
-      "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
-      }
-    }
-  }
-}
-```
+#### OpenCode
 
 配置方法：
 1. 打开 OpenCode 设置
-2. 找到 MCP Servers 或 Tools 配置选项
-3. 点击添加新的 MCP Server
-4. 输入名称（如 `cbeta`）
-5. 粘贴上述 JSON 配置
-6. 保存并刷新配置
+2. 找到 MCP Servers 配置
+3. 添加以下配置：
+
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["./mcp-bridge.js"],
+      "env": {
+        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
+4. 保存并刷新配置
 
 ### 调用示例
 
