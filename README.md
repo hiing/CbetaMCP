@@ -6,9 +6,28 @@ Cloudflare Workers 版本的 Cbeta MCP 服务器，提供 CBETA 佛经数据库�
 
 本项目是将 Python FastAPI 版本的 [CbetaMCP](https://github.com/tendayspace/CbetaMCP) 迁移到 Cloudflare Workers 的版本。
 
+## ⚠️ 重要提醒：必须使用自定义域名
+
+**Cloudflare Workers 提供的 `*.workers.dev` 域名在某些网络环境下无法正常访问。**
+
+### ❌ 不可使用
+```
+https://your-worker.your-subdomain.workers.dev  ❌ 无法调用
+```
+
+### ✅ 必须使用
+```
+https://cbeta.yourdomain.com          ✅ 自定义域名
+https://cbeta-mcp.yourdomain.com      ✅ 子域名
+```
+
+**你需要在 Cloudflare 中为自己的 Workers 绑定自定义域名后才能正常使用。**
+
+---
+
 ## 快速开始
 
-本项目需要**自己部署**到 Cloudflare Workers。请按以下步骤操作：
+本项目需要**自己部署**到 Cloudflare Workers，并**绑定自定义域名**。请按以下步骤操作：
 
 ### 1. Fork 并部署
 
@@ -31,12 +50,46 @@ Cloudflare Workers 版本的 Cbeta MCP 服务器，提供 CBETA 佛经数据库�
    npm run deploy
    ```
 
-### 2. 获取你的 Workers 地址
+### 2. 绑定自定义域名（⚠️ 关键步骤）
 
-部署成功后，你会得到类似这样的地址：
+**workers.dev 域名无法使用，必须绑定自己的域名。**
+
+#### 步骤 1：添加自定义域名到 Cloudflare
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. 选择你的 Workers 项目
+3. 进入 **Settings** > **Triggers** > **Custom Domains**
+4. 点击 **Add Custom Domain**
+5. 输入你的域名，例如：
+   - `cbeta.yourdomain.com`
+   - `mcp.yourdomain.com`
+   - `cbeta-mcp.yourdomain.com`
+
+#### 步骤 2：确保域名在 Cloudflare 托管
+
+- 你的域名必须使用 Cloudflare 的 DNS
+- 在 Cloudflare 添加域名后，会提供 DNS 记录
+- 在你的域名注册商处修改 DNS 为 Cloudflare 提供的地址
+
+#### 步骤 3：验证域名生效
+
+```bash
+# 测试你的自定义域名
+curl https://cbeta.yourdomain.com/mcp -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test"}}}'
 ```
-https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
+
+**看到返回 JSON 数据即表示成功。**
+
+### 3. 获取你的 Workers 地址
+
+部署并绑定自定义域名后，你会得到这样的地址：
 ```
+https://cbeta.yourdomain.com
+```
+
+**注意**：不要使用 Cloudflare 提供的 `*.workers.dev` 地址，那个无法调用。
 
 ### 3. 配置 MCP 客户端
 
@@ -46,7 +99,7 @@ https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
 
 | 环境变量 | 说明 | 示例 |
 |---------|------|------|
-| `SERVER_URL` | **必需** - 你的 Cloudflare Workers 地址 | `https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp` |
+| `SERVER_URL` | **必需** - 你的 Cloudflare Workers 自定义域名地址 | `https://cbeta.yourdomain.com/mcp` |
 | `MCP_BRIDGE_PATH` | **可选** - mcp-bridge.js 的路径，默认为 `./mcp-bridge.js` | `/absolute/path/to/mcp-bridge.js` |
 
 #### 配置示例
@@ -62,12 +115,14 @@ https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
 }
 ```
+
+**⚠️ 注意**：使用你自己的自定义域名，不是 `workers.dev`
 
 **方式二：使用环境变量指定路径**
 
@@ -75,11 +130,11 @@ https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
 ```bash
 # Linux/Mac
 export MCP_BRIDGE_PATH="/path/to/cbeta-mcp/mcp-bridge.js"
-export SERVER_URL="https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+export SERVER_URL="https://cbeta.yourdomain.com/mcp"
 
 # Windows PowerShell
 $env:MCP_BRIDGE_PATH="C:/path/to/cbeta-mcp/mcp-bridge.js"
-$env:SERVER_URL="https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+$env:SERVER_URL="https://cbeta.yourdomain.com/mcp"
 ```
 
 然后配置 MCP 客户端：
@@ -88,9 +143,9 @@ $env:SERVER_URL="https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
   "mcpServers": {
     "cbeta": {
       "command": "node",
-      "args": ["${MCP_BRIDGE_PATH}"],
+      "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "${SERVER_URL}"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
@@ -169,16 +224,16 @@ CbetaMCP/
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
 }
 ```
 
-**配置说明**：
+**⚠️ 重要提醒**：
 - `args`: mcp-bridge.js 的路径（相对或绝对路径）
-- `SERVER_URL`: 你的 Cloudflare Workers 地址
+- `SERVER_URL`: 你的 Cloudflare Workers **自定义域名**地址（**不是 workers.dev**）
 
 ---
 
@@ -197,6 +252,8 @@ CbetaMCP/
   }
 }
 ```
+
+**注意**：本地开发使用 `localhost`，生产环境必须使用自定义域名。
 
 ---
 
@@ -233,7 +290,7 @@ Settings > Features > MCP Servers：
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
@@ -253,7 +310,7 @@ MCP Server 配置：
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
@@ -275,7 +332,7 @@ MCP 配置面板：
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
@@ -298,7 +355,7 @@ MCP 配置面板：
       "command": "node",
       "args": ["./mcp-bridge.js"],
       "env": {
-        "SERVER_URL": "https://your-worker-name.your-subdomain.workers.dev/mcp"
+        "SERVER_URL": "https://cbeta.yourdomain.com/mcp"
       }
     }
   }
@@ -321,7 +378,7 @@ AI 助手会自动调用相应的 MCP 工具来获取 CBETA 佛经数据。
 你也可以直接通过 HTTP POST 请求调用 MCP 服务：
 
 ```bash
-curl -X POST https://your-worker-name.your-subdomain.workers.dev/mcp \
+curl -X POST https://cbeta.yourdomain.com/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -333,7 +390,7 @@ curl -X POST https://your-worker-name.your-subdomain.workers.dev/mcp \
 调用工具示例：
 
 ```bash
-curl -X POST https://your-worker-name.your-subdomain.workers.dev/mcp \
+curl -X POST https://cbeta.yourdomain.com/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
