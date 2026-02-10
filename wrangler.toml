@@ -1,10 +1,25 @@
 name = "cbetamcp"
 main = "src/index.ts"
-compatibility_date = "2024-02-06"
+compatibility_date = "2023-10-30"
 
+# Environment variables (used in production)
 [vars]
-APP_NAME = "CbetaMCP"
+APP_NAME = "cbeta-mcp-workers"
 APP_VERSION = "1.0.0"
+
+# ============================================
+# 多域名部署说明
+# ============================================
+# 如果要部署到多个域名，需要修改 name：
+# 1. 复制本项目到新的目录
+# 2. 修改上面的 name = "your-new-name"
+# 3. 运行 npm run deploy
+# 4. 获取新的 Workers 地址
+#
+# 注意：
+# - 每个 name 必须是全局唯一的
+# - 部署后会生成 https://name.your-subdomain.workers.dev
+# - 可以绑定自定义域名（见 README）
 
 [env.development]
 vars = { APP_ENV = "development" }
