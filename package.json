@@ -27,5 +27,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/cbeta-mcp-workers.git"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
   }
 }
