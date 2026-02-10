@@ -18,6 +18,8 @@ export class MCPServer {
   async handleRequest(request: JSONRPCRequest): Promise<JSONRPCResponse> {
     try {
       switch (request.method) {
+        case 'initialize':
+          return this.handleInitialize(request.id, request.params);
         case 'tools/list':
           return this.handleListTools(request.id);
         case 'tools/call':
@@ -36,6 +38,26 @@ export class MCPServer {
         error instanceof Error ? error.message : 'Internal error'
       );
     }
+  }
+
+  private handleInitialize(
+    id: string | number | null,
+    params: unknown
+  ): JSONRPCResponse {
+    return {
+      jsonrpc: '2.0',
+      id,
+      result: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {},
+        },
+        serverInfo: {
+          name: 'cbeta-mcp-server',
+          version: '1.0.0',
+        },
+      },
+    };
   }
 
   private handleListTools(id: string | number | null): JSONRPCResponse {
