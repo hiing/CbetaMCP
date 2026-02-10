@@ -6,6 +6,56 @@ Cloudflare Workers 版本的 Cbeta MCP 服务器，提供 CBETA 佛经数据库�
 
 本项目是将 Python FastAPI 版本的 [CbetaMCP](https://github.com/tendayspace/CbetaMCP) 迁移到 Cloudflare Workers 的版本。
 
+## 快速开始
+
+本项目需要**自己部署**到 Cloudflare Workers。请按以下步骤操作：
+
+### 1. Fork 并部署
+
+1. Fork 本项目到你的 GitHub
+2. 克隆到本地：
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/CbetaMCP.git
+   cd CbetaMCP
+   ```
+3. 安装依赖：
+   ```bash
+   npm install
+   ```
+4. 登录 Cloudflare：
+   ```bash
+   npx wrangler login
+   ```
+5. 部署：
+   ```bash
+   npm run deploy
+   ```
+
+### 2. 获取你的 Workers 地址
+
+部署成功后，你会得到类似这样的地址：
+```
+https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev
+```
+
+### 3. 配置 MCP 客户端
+
+在 MCP 客户端配置中，将 `SERVER_URL` 设置为你的地址：
+
+```json
+{
+  "mcpServers": {
+    "cbeta": {
+      "command": "node",
+      "args": ["/path/to/mcp-bridge.js"],
+      "env": {
+        "SERVER_URL": "https://cbeta-mcp-workers.YOUR_SUBDOMAIN.workers.dev/mcp"
+      }
+    }
+  }
+}
+```
+
 ## 技术栈
 
 - Cloudflare Workers

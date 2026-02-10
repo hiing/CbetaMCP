@@ -8,7 +8,20 @@ const http = require('http');
 const https = require('https');
 const { URL } = require('url');
 
-const SERVER_URL = process.env.SERVER_URL || 'https://cbetamcp.hiing.net/mcp';
+const SERVER_URL = process.env.SERVER_URL;
+
+if (!SERVER_URL) {
+  console.error('错误：未设置 SERVER_URL 环境变量');
+  console.error('请设置您的 MCP 服务器地址，例如：');
+  console.error('  SERVER_URL=https://your-worker.your-subdomain.workers.dev/mcp');
+  console.error('');
+  console.error('部署步骤：');
+  console.error('  1. Fork 本项目');
+  console.error('  2. 运行 npm install && npm run deploy');
+  console.error('  3. 获取您的 Workers 地址');
+  console.error('  4. 设置 SERVER_URL 环境变量');
+  process.exit(1);
+}
 
 // Read JSON-RPC messages from stdin
 let buffer = '';
